@@ -13,6 +13,8 @@ white_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine
 red_wine = pd.read_csv(red_wine_url, delimiter=";")
 white_wine = pd.read_csv(white_wine_url, delimiter=";")
 
+print(f"CSV files imported...")
+
 red_wine["type"] = 0
 white_wine["type"] = 1
 
@@ -31,6 +33,8 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
+print(f"Trainning Set, Testing Set Separated...")
+
 # Step 3: Build and train the model
 model = Sequential(
     [
@@ -44,9 +48,13 @@ model.compile(optimizer="adam", loss="mse", metrics=["mae"])
 
 history = model.fit(X_train, y_train, epochs=50, validation_split=0.2)
 
+print(f"NN Model Trained...")
+
 # Step 4: Validate the model
 test_loss, test_mae = model.evaluate(X_test, y_test)
 print(f"Test MAE: {test_mae}")
+
+print(f"NN Model Validated...")
 
 # Step 5: Make conclusions
 plt.figure(figsize=(12, 6))
