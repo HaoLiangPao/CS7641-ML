@@ -4,18 +4,17 @@ from sklearn.neighbors import KNeighborsClassifier
 
 
 # 1. Load the wine quality dataset
-red_wine = pd.read_csv(
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv",
-    delimiter=";",
-)
-white_wine = pd.read_csv(
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv",
-    delimiter=";",
-)
+red_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
+white_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
 
-# Combine red and white wine datasets and add a column to distinguish them
+red_wine = pd.read_csv(red_wine_url, delimiter=";")
+white_wine = pd.read_csv(white_wine_url, delimiter=";")
+
+# Add a type column to distinguish red and white wine
 red_wine["type"] = 0
 white_wine["type"] = 1
+
+# Combine the datasets
 wine_data = pd.concat([red_wine, white_wine])
 
 # Check the first few rows of the dataset
