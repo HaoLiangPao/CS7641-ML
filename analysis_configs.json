@@ -1,0 +1,51 @@
+{
+  "wine": {
+    "NN": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "EPOCHS": 50,
+      "BATCH_SIZE": 128,
+      "VALIDATION_SPLIT": 0.2,
+      "ACTIVATION": "relu",
+      "BINARY_ACTIVATION": "sigmoid",
+      "MULTIPLE_ACTIVATION": "softmax",
+      "OPTIMIZER": "adam",
+      "BINARY_LOSS": "binary_crossentropy",
+      "MULTIPLE_LOSS": "sparse_categorical_crossentropy",
+      "METRIC": "accuracy"
+    },
+    "KNN": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "N_NEIGHBORS": 5
+    },
+    "SVM": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "KERNEL": "linear"
+    }
+  },
+  "fashion_mnist": {
+    "NN": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "EPOCHS": 50,
+      "BATCH_SIZE": 128,
+      "VALIDATION_SPLIT": 0.2,
+      "ACTIVATION": "relu",
+      "OPTIMIZER": "adam",
+      "LOSS": "sparse_categorical_crossentropy",
+      "METRIC": "accuracy"
+    },
+    "KNN": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "N_NEIGHBORS": 5
+    },
+    "SVM": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "KERNEL": "linear"
+    }
+  }
+}
