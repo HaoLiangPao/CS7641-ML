@@ -1,5 +1,7 @@
 {
+  // Configuration for the Wine dataset
   "wine": {
+    // Neural Network parameters
     "NN": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
@@ -12,7 +14,20 @@
       "OPTIMIZER": "adam",
       "BINARY_LOSS": "binary_crossentropy",
       "MULTIPLE_LOSS": "sparse_categorical_crossentropy",
-      "METRIC": "accuracy"
+      "METRIC": "accuracy",
+      // Hyperparameter tuning ranges
+      "HYPERPARAMETER_RANGES": {
+        "EPOCHS": [
+          10,
+          50,
+          100
+        ],
+        "BATCH_SIZE": [
+          32,
+          64,
+          128
+        ]
+      }
     },
     "KNN": {
       "TEST_SIZE": 0.2,
@@ -25,6 +40,7 @@
       "KERNEL": "linear"
     }
   },
+  // Configuration for the Fashion MNIST dataset
   "fashion_mnist": {
     "NN": {
       "TEST_SIZE": 0.2,
@@ -35,7 +51,20 @@
       "ACTIVATION": "relu",
       "OPTIMIZER": "adam",
       "LOSS": "sparse_categorical_crossentropy",
-      "METRIC": "accuracy"
+      "METRIC": "accuracy",
+      // Hyperparameter tuning ranges
+      "HYPERPARAMETER_RANGES": {
+        "EPOCHS": [
+          10,
+          50,
+          100
+        ],
+        "BATCH_SIZE": [
+          32,
+          64,
+          128
+        ]
+      }
     },
     "KNN": {
       "TEST_SIZE": 0.2,

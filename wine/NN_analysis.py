@@ -1,20 +1,28 @@
-import json
+import json5
 import os
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
-from sklearn.model_selection import train_test_split, learning_curve
+from tensorflow.keras.optimizers import Adam
+
+from sklearn.model_selection import train_test_split, learning_curve, validation_curve
+from scikeras.wrappers import KerasClassifier, KerasRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 import matplotlib.pyplot as plt
 
 # Customized Libraries
-
+from wine.utils.plotting import (
+    plot_learning_curve,
+    plot_validation_curve,
+    plot_iterative_learning_curves,
+)
 
 # Load configuration from JSON file
 with open("../analysis_configs.json", "r") as f:
-    config = json.load(f)
+    config = json5.load(f)
 
 # Extract hyperparameters for Wine dataset NN
 wine_nn_config = config["wine"]["NN"]
@@ -26,9 +34,12 @@ BATCH_SIZE = wine_nn_config["BATCH_SIZE"]
 VALIDATION_SPLIT = wine_nn_config["VALIDATION_SPLIT"]
 ACTIVATION = wine_nn_config["ACTIVATION"]
 BINARY_ACTIVATION = wine_nn_config["BINARY_ACTIVATION"]
+MULTIPLE_ACTIVATION = wine_nn_config["MULTIPLE_ACTIVATION"]
 OPTIMIZER = wine_nn_config["OPTIMIZER"]
 BINARY_LOSS = wine_nn_config["BINARY_LOSS"]
+MULTIPLE_LOSS = wine_nn_config["MULTIPLE_LOSS"]
 METRIC = wine_nn_config["METRIC"]
+HYPERPARAMETER_RANGES = wine_nn_config["HYPERPARAMETER_RANGES"]
 
 # Step 1: Load the wine quality dataset
 red_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
@@ -66,15 +77,39 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # Step 3: Build and train the model
+
+# binary model (Q1: red/white)
+# model = Sequential(
+#     [
+#         Dense(64, activation=ACTIVATION, input_shape=(X_train.shape[1],)),
+#         Dense(64, activation=ACTIVATION),
+#         Dense(1, activation=BINARY_ACTIVATION),
+#     ]
+# )
+
+# model.compile(optimizer=OPTIMIZER, loss=BINARY_LOSS, metrics=[METRIC])
+
+# history = model.fit(
+#     X_train,
+#     y_train,
+#     epochs=EPOCHS,
+#     batch_size=BATCH_SIZE,
+#     validation_split=VALIDATION_SPLIT,
+# )
+
+# for key in history.history.keys():
+#     print(f"{key}: {history.history[key]}")
+
+# multiple model (Q2: wine quality)
 model = Sequential(
     [
         Dense(64, activation=ACTIVATION, input_shape=(X_train.shape[1],)),
         Dense(64, activation=ACTIVATION),
-        Dense(1, activation=BINARY_ACTIVATION),
+        Dense(1, activation=MULTIPLE_ACTIVATION),
     ]
 )
 
-model.compile(optimizer=OPTIMIZER, loss=BINARY_LOSS, metrics=[METRIC])
+model.compile(optimizer=OPTIMIZER, loss=MULTIPLE_LOSS, metrics=[METRIC])
 
 history = model.fit(
     X_train,
@@ -94,102 +129,37 @@ print(f"Test {METRIC}: {test_metric}")
 
 # Step 5: Make conclusions
 # Plotting iterative learning curves by iteration
-plt.figure(figsize=(12, 6))
-plt.plot(history.history["loss"], label="Train Loss", color="navy")
-plt.plot(history.history["val_loss"], label="Validation Loss", color="lightcoral")
-plt.xlabel("Iteration")
-plt.ylabel("Loss")
-plt.title("Iterative Learning Curve (Loss)")
-plt.grid(visible=True)
-plt.legend(frameon=False)
-plt.show()
-
-plt.figure(figsize=(12, 6))
-plt.plot(history.history["accuracy"], label="Train Accuracy", color="cornflowerblue")
-plt.plot(history.history["val_accuracy"], label="Validation Accuracy", color="chartreuse")
-plt.xlabel("Iteration")
-plt.ylabel("Accuracy")
-plt.title("Iterative Learning Curve (Accuracy)")
-plt.grid(visible=True)
-plt.legend(frameon=False)
-plt.show()
-
+plot_iterative_learning_curves(
+    history, metric=METRIC, save_path="images/nn_iterative_learning_curve"
+)
 
 # Step 6: Plot learning curve with varying training sizes
-def plot_learning_curve(
-    estimator,
-    title,
-    X,
-    y,
-    ylim=None,
-    cv=None,
-    n_jobs=None,
-    train_sizes=np.linspace(0.1, 1.0, 5),
-):
-    plt.figure()
-    plt.title(title)
-    if ylim is not None:
-        plt.ylim(*ylim)
-    plt.xlabel("Training examples")
-    plt.ylabel("Score")
-    train_sizes, train_scores, test_scores = learning_curve(
-        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes
-    )
-    train_scores_mean = np.mean(train_scores, axis=1)
-    train_scores_std = np.std(train_scores, axis=1)
-    test_scores_mean = np.mean(test_scores, axis=1)
-    test_scores_std = np.std(test_scores, axis=1)
-    plt.grid()
-
-    plt.fill_between(
-        train_sizes,
-        train_scores_mean - train_scores_std,
-        train_scores_mean + train_scores_std,
-        alpha=0.1,
-        color="r",
-    )
-    plt.fill_between(
-        train_sizes,
-        test_scores_mean - test_scores_std,
-        test_scores_mean + test_scores_std,
-        alpha=0.1,
-        color="g",
-    )
-    plt.plot(train_sizes, train_scores_mean, "o-", color="r", label="Training score")
-    plt.plot(
-        train_sizes, test_scores_mean, "o-", color="g", label="Cross-validation score"
-    )
-
-    plt.legend(loc="best")
-    return plt
-
-
-from sklearn.base import BaseEstimator, ClassifierMixin
-
-
-class KerasClassifier(BaseEstimator, ClassifierMixin):
-    def __init__(self, model):
-        self.model = model
-
-    def fit(self, X, y):
-        self.model.fit(
-            X,
-            y,
-            epochs=EPOCHS,
-            batch_size=BATCH_SIZE,
-            validation_split=VALIDATION_SPLIT,
-            verbose=0,
-        )
-        return self
-
-    def predict(self, X):
-        return (self.model.predict(X) > 0.5).astype("int32")
-
-    def score(self, X, y):
-        return self.model.evaluate(X, y, verbose=0)[1]
-
-
 keras_clf = KerasClassifier(model)
 
-plot_learning_curve(keras_clf, "Learning Curve", X_train, y_train, cv=3)
+# 1. Plot learning curve
+plot_learning_curve(
+    keras_clf, 
+    "Learning Curve", 
+    X_train, 
+    y_train, 
+    cv=3,
+    save_path="images/nn_learning_curve.jpg"
+)
 plt.show()
+
+# 2. Plot validation curve with parameter range for 'param_name'
+for hyperparameter in HYPERPARAMETER_RANGES:
+    param_name = hyperparameter
+    param_range = HYPERPARAMETER_RANGES[hyperparameter]
+
+    plot_validation_curve(
+        keras_clf,
+        f"Validation Curve ({param_name})",
+        X_train,
+        y_train,
+        param_name=param_name,
+        param_range=param_range,
+        cv=3,
+        save_path=f"images/nn_validation_curve_{param_name}.jpg",
+    )
+    plt.show()
