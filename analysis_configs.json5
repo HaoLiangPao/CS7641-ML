@@ -37,7 +37,9 @@
     "SVM": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
-      "KERNEL": "linear"
+      "C": [0.1, 1, 10],
+      "KERNEL": "rbf",
+      "GAMMA": [0.001, 0.01, 0.1]
     }
   },
   // Configuration for the Fashion MNIST dataset

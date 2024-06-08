@@ -162,3 +162,34 @@ def plot_iterative_learning_curves(history, metric="accuracy", save_path=None):
     else:
         plt.show()
     plt.close()
+
+def plot_iterative_learning_curves(histories, labels, metric='accuracy', save_path=None):
+    plt.figure(figsize=(12, 6))
+    for history, label in zip(histories, labels):
+        plt.plot(history.history["loss"], label=f"{label} Train Loss")
+        plt.plot(history.history["val_loss"], label=f"{label} Validation Loss")
+    plt.xlabel("Iteration")
+    plt.ylabel("Loss")
+    plt.title("Iterative Learning Curve (Loss)")
+    plt.grid(visible=True)
+    plt.legend(frameon=False)
+    if save_path:
+        plt.savefig(save_path + "_loss.jpg")
+    else:
+        plt.show()
+    plt.close()
+
+    plt.figure(figsize=(12, 6))
+    for history, label in zip(histories, labels):
+        plt.plot(history.history[metric], label=f"{label} Train {metric.capitalize()}")
+        plt.plot(history.history[f"val_{metric}"], label=f"{label} Validation {metric.capitalize()}")
+    plt.xlabel("Iteration")
+    plt.ylabel(metric.capitalize())
+    plt.title(f"Iterative Learning Curve ({metric.capitalize()})")
+    plt.grid(visible=True)
+    plt.legend(frameon=False)
+    if save_path:
+        plt.savefig(save_path + f"_{metric}.jpg")
+    else:
+        plt.show()
+    plt.close()
