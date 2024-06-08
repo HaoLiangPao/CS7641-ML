@@ -17,12 +17,12 @@
       "METRIC": "accuracy",
       // Hyperparameter tuning ranges
       "HYPERPARAMETER_RANGES": {
-        "EPOCHS": [
+        "epochs": [
           10,
           50,
           100
         ],
-        "BATCH_SIZE": [
+        "batch_size": [
           32,
           64,
           128

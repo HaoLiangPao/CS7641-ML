@@ -14,14 +14,14 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 import matplotlib.pyplot as plt
 
 # Customized Libraries
-from wine.utils.plotting import (
+from utils.plotting import (
     plot_learning_curve,
     plot_validation_curve,
     plot_iterative_learning_curves,
 )
 
 # Load configuration from JSON file
-with open("../analysis_configs.json", "r") as f:
+with open("../analysis_configs.json5", "r") as f:
     config = json5.load(f)
 
 # Extract hyperparameters for Wine dataset NN
@@ -55,13 +55,13 @@ wine_data = pd.concat([red_wine, white_wine])
 print(wine_data.head())
 
 # Step 2: Process the wine dataset
-# For red/white binary classification
-X = wine_data.drop("quality", axis=1)
-y = wine_data["quality"]
+# # For red/white binary classification
+# X = wine_data.drop("type", axis=1)
+# y = wine_data["type"]
 
 # For quality mul-ti classification
-X = wine_data.drop(["quality", "type"], axis=1)
-y = wine_data["type"]
+X = wine_data.drop(["quality"], axis=1)
+y = wine_data["quality"]
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
@@ -101,13 +101,28 @@ X_test = scaler.transform(X_test)
 #     print(f"{key}: {history.history[key]}")
 
 # multiple model (Q2: wine quality)
-model = Sequential(
-    [
-        Dense(64, activation=ACTIVATION, input_shape=(X_train.shape[1],)),
-        Dense(64, activation=ACTIVATION),
-        Dense(1, activation=MULTIPLE_ACTIVATION),
-    ]
-)
+
+
+# Function to create model
+def create_model(
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+    activation="relu",
+    output_activation="softmax",
+):
+    model = Sequential(
+        [
+            Dense(64, activation=activation, input_shape=(X_train.shape[1],)),
+            Dense(64, activation=activation),
+            Dense(10, activation=output_activation),  # 7 classes for labels 3 to 9
+            # Dense(7, activation=output_activation),  # 7 classes for labels 3 to 9
+        ]
+    )
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    return model
+
+model = create_model()
 
 model.compile(optimizer=OPTIMIZER, loss=MULTIPLE_LOSS, metrics=[METRIC])
 
@@ -134,8 +149,12 @@ plot_iterative_learning_curves(
 )
 
 # Step 6: Plot learning curve with varying training sizes
-keras_clf = KerasClassifier(model)
-
+keras_clf = KerasClassifier(
+    model=create_model,
+    epochs=EPOCHS,
+    batch_size=BATCH_SIZE,
+    validation_split=VALIDATION_SPLIT,
+)
 # 1. Plot learning curve
 plot_learning_curve(
     keras_clf, 
