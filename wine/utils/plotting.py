@@ -193,3 +193,63 @@ def plot_iterative_learning_curves(histories, labels, metric='accuracy', save_pa
     else:
         plt.show()
     plt.close()
+
+
+# Function to plot multiple learning curves
+def plot_multiple_learning_curves(
+    estimators,
+    labels,
+    title,
+    X,
+    y,
+    ylim=None,
+    cv=None,
+    n_jobs=None,
+    train_sizes=np.linspace(0.1, 1.0, 5),
+    save_path=None,
+    custom_params=None,
+):
+    plt.figure()
+    plt.title(title)
+    if ylim is not None:
+        plt.ylim(*ylim)
+    plt.xlabel("Training examples")
+    plt.ylabel("Score")
+
+    if custom_params:
+        for key, value in custom_params.items():
+            plt.setp(plt.gca(), key, value)
+
+    for estimator, label in zip(estimators, labels):
+        train_sizes, train_scores, test_scores = learning_curve(
+            estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes
+        )
+        train_scores_mean = np.mean(train_scores, axis=1)
+        train_scores_std = np.std(train_scores, axis=1)
+        test_scores_mean = np.mean(test_scores, axis=1)
+        test_scores_std = np.std(test_scores, axis=1)
+        plt.grid()
+
+        plt.fill_between(
+            train_sizes,
+            train_scores_mean - train_scores_std,
+            train_scores_mean + train_scores_std,
+            alpha=0.1,
+        )
+        plt.fill_between(
+            train_sizes,
+            test_scores_mean - test_scores_std,
+            test_scores_mean + test_scores_std,
+            alpha=0.1,
+        )
+        plt.plot(train_sizes, train_scores_mean, "o-", label=f"{label} Training score")
+        plt.plot(
+            train_sizes, test_scores_mean, "o-", label=f"{label} Cross-validation score"
+        )
+
+    plt.legend(loc="best")
+    if save_path:
+        plt.savefig(save_path)
+    else:
+        plt.show()
+    plt.close()

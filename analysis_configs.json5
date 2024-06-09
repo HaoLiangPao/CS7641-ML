@@ -32,14 +32,23 @@
     "KNN": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
-      "N_NEIGHBORS": 5
+      "N_NEIGHBORS": [3, 5, 7, 9, 11],
+      "WEIGHTS": ["uniform", "distance"]
     },
     "SVM": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
-      "C": [0.1, 1, 10],
+      "C": [0.1, 1, 10, 100, 1000],
       "KERNEL": "rbf",
-      "GAMMA": [0.001, 0.01, 0.1]
+      "GAMMA": [0.001, 0.01, 0.1, 1, 10],
+      "DEGREE": [2, 3, 4],  // Only applicable for polynomial kernel
+      "COEF0": [0, 1, 10],   // For polynomial and sigmoid kernels
+    },
+    "BOOST": {
+      "TEST_SIZE": 0.2,
+      "RANDOM_STATE": 42,
+      "N_ESTIMATORS": [50, 100, 150],
+      "LEARNING_RATE": [0.01, 0.1, 1.0]
     }
   },
   // Configuration for the Fashion MNIST dataset

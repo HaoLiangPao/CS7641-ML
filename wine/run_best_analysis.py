@@ -4,14 +4,24 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 
+# Models
+# NN
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
-
-from sklearn.model_selection import train_test_split, learning_curve, validation_curve
 from scikeras.wrappers import KerasClassifier
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
+# SVM
 from sklearn.svm import SVC
+
+# K-NN
+from sklearn.neighbors import KNeighborsClassifier
+
+# Model Tunning
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
+# Plotting
+from sklearn.model_selection import train_test_split, learning_curve, validation_curve
 import matplotlib.pyplot as plt
 
 # Customized Libraries
@@ -28,6 +38,7 @@ with open("../analysis_configs.json5", "r") as f:
 # Extract hyperparameters for Wine dataset NN
 wine_nn_config = config["wine"]["NN"]
 wine_svm_config = config["wine"]["SVM"]
+wine_knn_config = config["wine"]["KNN"]
 
 TEST_SIZE = wine_nn_config["TEST_SIZE"]
 RANDOM_STATE = wine_nn_config["RANDOM_STATE"]
@@ -46,6 +57,9 @@ NN_HYPERPARAMETER_RANGES = wine_nn_config["HYPERPARAMETER_RANGES"]
 SVM_C = wine_svm_config["C"]
 SVM_KERNEL = wine_svm_config["KERNEL"]
 SVM_GAMMA = wine_svm_config["GAMMA"]
+
+KNN_N_NEIGHBORS = wine_knn_config["N_NEIGHBORS"]
+KNN_WEIGHTS = wine_knn_config["WEIGHTS"]
 
 # ========== Step 1: Load the wine quality dataset ==========
 red_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
@@ -79,9 +93,9 @@ X_test = scaler.transform(X_test)
 
 
 # ========== Step 3: Build and train the NN model ==========
+# TODO: Show the best hyperperameter chosen
 
 ##[NN]
-
 def create_nn_model(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
@@ -99,6 +113,7 @@ def create_nn_model(
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
     return model
 
+
 nn_model = create_nn_model()
 nn_history = nn_model.fit(
     X_train,
@@ -112,6 +127,10 @@ nn_history = nn_model.fit(
 svm_clf = SVC(kernel=SVM_KERNEL, random_state=RANDOM_STATE, probability=True)
 svm_history = svm_clf.fit(X_train, y_train)
 
+## [KNN]
+knn_clf = KNeighborsClassifier(n_neighbors=5, weights="uniform")
+knn_clf.fit(X_train, y_train)
+
 # ========== Step 4: Validate the model ==========
 ## [NN]
 test_loss, test_metric = nn_model.evaluate(X_test, y_test)
@@ -119,9 +138,12 @@ print(f"NN Test Loss: {test_loss}")
 print(f"NN Test {METRIC}: {test_metric}")
 
 ## [SVM]
-
 svm_test_metric = svm_clf.score(X_test, y_test)
 print(f"SVM Test {METRIC}: {svm_test_metric}")
+
+## [KNN]
+knn_test_metric = knn_clf.score(X_test, y_test)
+print(f"KNN Test {METRIC}: {knn_test_metric}")
 
 
 # ========== Step 5: Plot learning curves ==========
@@ -152,35 +174,15 @@ plot_learning_curve(
     save_path="images/svm_learning_curve.jpg",
 )
 
-# ========== Step 6: Plot validation curves ==========
-# NN Validation Curves
-for hyperparameter in NN_HYPERPARAMETER_RANGES:
-    param_name = hyperparameter
-    param_range = NN_HYPERPARAMETER_RANGES[hyperparameter]
-
-    plot_validation_curve(
-        nn_clf,
-        f"NN Validation Curve ({param_name})",
-        X_train,
-        y_train,
-        param_name=param_name,
-        param_range=param_range,
-        cv=3,
-        save_path=f"images/nn_validation_curve_{param_name}.jpg",
-    )
-
-# SVM Validation Curves
-for param_name, param_range in zip(["C", "gamma"], [SVM_C, SVM_GAMMA]):
-    plot_validation_curve(
-        svm_clf,
-        f"SVM Validation Curve ({param_name})",
-        X_train,
-        y_train,
-        param_name=param_name,
-        param_range=param_range,
-        cv=3,
-        save_path=f"images/svm_validation_curve_{param_name}.jpg",
-    )
+## [KNN]
+plot_learning_curve(
+    knn_clf,
+    "KNN Learning Curve",
+    X_train,
+    y_train,
+    cv=3,
+    save_path="images/knn_learning_curve.jpg",
+)
 
 # ========== Step 8: Plot combined iterative learning curves ==========
 # histories = [nn_history, svm_history]
@@ -190,29 +192,3 @@ labels = ["Neural Network"]
 plot_iterative_learning_curves(
     histories, labels, metric=METRIC, save_path="images/iterative_learning_curve"
 )
-
-
-## [SVM] Comparision between different kernal functions
-kernel_functions = ["linear", "poly", "rbf", "sigmoid"]
-histories = []
-labels = []
-
-for kernel in kernel_functions:
-    svm_clf = SVC(
-        kernel=kernel, random_state=RANDOM_STATE, C=1, gamma="scale"
-    )  # Fixed C and gamma for comparison
-    svm_clf.fit(X_train, y_train)
-
-    # Plot learning curve
-    plot_learning_curve(
-        svm_clf,
-        f"SVM Learning Curve ({kernel} kernel)",
-        X_train,
-        y_train,
-        cv=3,
-        save_path=f"images/svm_learning_curve_{kernel}.jpg",
-    )
-
-    # Save history and labels for combined iterative learning curve
-    histories.append(svm_clf)
-    labels.append(f"SVM ({kernel})")
