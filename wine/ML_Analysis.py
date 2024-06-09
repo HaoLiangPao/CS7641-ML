@@ -29,6 +29,7 @@ from utils.plotting import (
     plot_learning_curve,
     plot_validation_curve,
     plot_iterative_learning_curves,
+    plot_learning_curve_with_test,
 )
 
 # Load configuration from JSON file
@@ -43,6 +44,8 @@ wine_boost_config = config["wine"]["BOOST"]
 
 TEST_SIZE = wine_nn_config["TEST_SIZE"]
 RANDOM_STATE = wine_nn_config["RANDOM_STATE"]
+METRIC = wine_nn_config["METRIC"]
+
 EPOCHS = wine_nn_config["EPOCHS"]
 BATCH_SIZE = wine_nn_config["BATCH_SIZE"]
 VALIDATION_SPLIT = wine_nn_config["VALIDATION_SPLIT"]
@@ -52,7 +55,6 @@ MULTIPLE_ACTIVATION = wine_nn_config["MULTIPLE_ACTIVATION"]
 OPTIMIZER = wine_nn_config["OPTIMIZER"]
 BINARY_LOSS = wine_nn_config["BINARY_LOSS"]
 MULTIPLE_LOSS = wine_nn_config["MULTIPLE_LOSS"]
-METRIC = wine_nn_config["METRIC"]
 NN_HYPERPARAMETER_RANGES = wine_nn_config["HYPERPARAMETER_RANGES"]
 
 SVM_C = wine_svm_config["C"]

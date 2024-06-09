@@ -10,11 +10,15 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from scikeras.wrappers import KerasClassifier
+
 # SVM
 from sklearn.svm import SVC
+
 # K-NN
 from sklearn.neighbors import KNeighborsClassifier
+
 # Boosting (Decision Tree)
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
 
 # Model Tunning
@@ -30,7 +34,7 @@ from utils.plotting import (
     plot_validation_curve,
     plot_iterative_learning_curves,
     plot_multiple_learning_curves,
-    plot_learning_curve_with_test
+    plot_learning_curve_with_test,
 )
 
 # Load configuration from JSON file
@@ -69,6 +73,7 @@ KNN_WEIGHTS = wine_knn_config["WEIGHTS"]
 
 BOOST_N_ESTIMATORS = wine_boost_config["N_ESTIMATORS"]
 BOOST_LEARNING_RATE = wine_boost_config["LEARNING_RATE"]
+BOOST_TREE_PARAMS = wine_boost_config["TREE_PARAMS"]
 
 # ========== Step 1: Load the wine quality dataset ==========
 red_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
@@ -100,134 +105,103 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# SVM Model
-svm_clf_rbf = SVC(kernel="rbf", random_state=RANDOM_STATE)
-svm_clf_poly = SVC(kernel="poly", random_state=RANDOM_STATE)
-svm_clf_sigmoid = SVC(kernel="sigmoid", random_state=RANDOM_STATE)
-svm_clf_linear = SVC(kernel="linear", random_state=RANDOM_STATE)
-
-# 1. Plot combined learning curves for different SVM kernels
-svm_estimators = [svm_clf_linear, svm_clf_poly, svm_clf_rbf, svm_clf_sigmoid]
-labels = ["Linear Kernel", "Polynomial Kernel", "RBF Kernel", "Sigmoid Kernel"]
-
-plot_multiple_learning_curves(
-    svm_estimators,
-    labels,
-    "SVM Learning Curves for Different Kernels",
-    X_train,
-    y_train,
-    cv=3,
-    save_path="images/svm_combined_learning_curves.jpg",
-)
-
 # 2. Plot validation curves
-# Validation curve for C
-plot_validation_curve(
-    SVC(kernel="rbf"),
-    title="Validation Curve for SVM (C)",
-    X=X_train,
-    y=y_train,
-    param_name="C",
-    param_range=SVM_C,
-    cv=3,
-    save_path="images/svm_validation_curve_C.jpg",
+# Initialize AdaBoostClassifier with a base decision tree classifier
+boost_clf = AdaBoostClassifier(
+    n_estimators=BOOST_N_ESTIMATORS[0],
+    learning_rate=BOOST_LEARNING_RATE[0],
+    random_state=RANDOM_STATE,
 )
+for param_name, param_range in zip(
+    ["n_estimators", "learning_rate"], [BOOST_N_ESTIMATORS, BOOST_LEARNING_RATE]
+):
+    plot_validation_curve(
+        boost_clf,
+        f"Boosting Validation Curve ({param_name})",
+        X_train,
+        y_train,
+        param_name=param_name,
+        param_range=param_range,
+        cv=3,
+        save_path=f"images/boosting_validation_curve_{param_name}.jpg",
+    )
 
-# Validation curve for gamma
-plot_validation_curve(
-    SVC(kernel="rbf"),
-    title="Validation Curve for SVM (gamma)",
-    X=X_train,
-    y=y_train,
-    param_name="gamma",
-    param_range=SVM_GAMMA,
-    cv=3,
-    save_path="images/svm_validation_curve_gamma.jpg",
-)
-
-# If using polynomial kernel, also consider degree and coef0
-plot_validation_curve(
-    SVC(kernel="poly"),
-    title="Validation Curve for SVM (degree)",
-    X=X_train,
-    y=y_train,
-    param_name="degree",
-    param_range=SVM_DEGREE,
-    cv=3,
-    save_path="images/svm_validation_curve_degree.jpg",
-)
-
-plot_validation_curve(
-    SVC(kernel="poly"),
-    title="Validation Curve for SVM (coef0)",
-    X=X_train,
-    y=y_train,
-    param_name="coef0",
-    param_range=SVM_COEF0,
-    cv=3,
-    save_path="images/svm_validation_curve_coef0.jpg",
-)
-
+boost_clf = AdaBoostClassifier(estimator=DecisionTreeClassifier())
+# Plot validation curves for tree pruning parameters
+for param_name, param_range in BOOST_TREE_PARAMS.items():
+    plot_validation_curve(
+        boost_clf,
+        f"Boosting Validation Curve ({param_name})",
+        X_train,
+        y_train,
+        param_name=param_name,
+        param_range=param_range,
+        cv=3,
+        save_path=f"images/boosting_validation_curve_{param_name}.jpg",
+    )
 
 # LEARNING CURVE
 
-## [SVM]
-svm_best = SVC(
-    kernel="rbf", C=100, gamma=1, random_state=RANDOM_STATE, probability=True
+# Assuming best parameters are determined (example values used here)
+best_n_estimators = 100
+best_learning_rate = 0.1
+
+# Create new AdaBoostClassifier with the best parameters
+best_boost_clf = AdaBoostClassifier(
+    estimator=DecisionTreeClassifier(
+        max_depth=3, min_samples_split=5, min_samples_leaf=2
+    ),
+    n_estimators=best_n_estimators,
+    learning_rate=best_learning_rate,
+    random_state=RANDOM_STATE,
 )
-svm_best.fit(X_train, y_train)
 
-svm_test_metric = svm_best.score(X_test, y_test)
-print(f"SVM Test {METRIC}: {svm_test_metric}")
-
-## [SVM]
+# Plot learning curve with test
 plot_learning_curve_with_test(
-    svm_best,
-    "SVM Learning Curve (Best Hyperparameters)",
+    best_boost_clf,
+    "Boosting Learning Curve (Best Hyperparameters)",
     X_train,
     y_train,
     X_test,
     y_test,
     cv=3,
-    save_path="images/svm_best_learning_curve_with_test.jpg",
+    save_path="images/boosting_best_learning_curve_with_test.jpg",
 )
 
 plot_learning_curve(
-    svm_best,
+    best_boost_clf,
     "SVM Learning Curve",
     X_train,
     y_train,
     cv=3,
-    save_path="images/svm_best_learning_curve.jpg",
+    save_path="images/boosting_best_learning_curve.jpg",
 )
 
-# Before tunning
-svm_clf = SVC(
-    kernel="rbf", random_state=RANDOM_STATE, probability=True
-)
-svm_clf.fit(X_train, y_train)
+# # Before tunning
+# svm_clf = SVC(kernel="rbf", random_state=RANDOM_STATE, probability=True)
+# svm_clf.fit(X_train, y_train)
 
-svm_test_metric = svm_clf.score(X_test, y_test)
-print(f"SVM Test {METRIC}: {svm_test_metric}")
+# svm_test_metric = svm_clf.score(X_test, y_test)
+# print(f"SVM Test {METRIC}: {svm_test_metric}")
 
 
-## [SVM]
-plot_learning_curve_with_test(
-    svm_clf,
-    "SVM Learning Curve (Best Hyperparameters)",
-    X_train,
-    y_train,
-    X_test,
-    y_test,
-    cv=3,
-    save_path="images/svm_clf_learning_curve_with_test.jpg",
-)
+# ## [SVM]
+# plot_learning_curve_with_test(
+#     svm_clf,
+#     "SVM Learning Curve (Best Hyperparameters)",
+#     X_train,
+#     y_train,
+#     X_test,
+#     y_test,
+#     cv=3,
+#     save_path="images/svm_clf_learning_curve_with_test.jpg",
+# )
 
-plot_learning_curve(
-    svm_clf,
-    "SVM Learning Curve",
-    X_train,
-    y_train,
-    cv=3,
-    save_path="images/svm_clf_learning_curve.jpg",
-)
+# plot_learning_curve(
+#     svm_clf,
+#     "SVM Learning Curve",
+#     X_train,
+#     y_train,
+#     cv=3,
+#     save_path="images/svm_clf_learning_curve.jpg",
+# )
