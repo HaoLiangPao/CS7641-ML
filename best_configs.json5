@@ -6,7 +6,7 @@
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
       "EPOCHS": 100,
-      "BATCH_SIZE": 128,
+      "BATCH_SIZE": 256,
       "VALIDATION_SPLIT": 0.2,
       "ACTIVATION": "relu",
       "BINARY_ACTIVATION": "sigmoid",
@@ -16,18 +16,9 @@
       "MULTIPLE_LOSS": "sparse_categorical_crossentropy",
       "METRIC": "accuracy",
       // Hyperparameter tuning ranges
-      "HYPERPARAMETER_RANGES": {
-        "epochs": [
-          10,
-          50,
-          100
-        ],
-        "batch_size": [
-          32,
-          64,
-          128
-        ]
-      }
+      "learning_rate": 0.01,
+      "num_layers": 2,
+      "units_per_layer": 64
     },
     "KNN": {
       "TEST_SIZE": 0.2,
@@ -54,8 +45,9 @@
       "estimator__min_samples_leaf": 3
     }
   },
-  // Configuration for the Fashion MNIST dataset
-  "fashion_mnist": {
+  // Configuration for the adult-census-income dataset
+  "adult_census_income": {
+    // Neural Network parameters
     "NN": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
@@ -63,43 +55,58 @@
       "BATCH_SIZE": 128,
       "VALIDATION_SPLIT": 0.2,
       "ACTIVATION": "relu",
+      "BINARY_ACTIVATION": "sigmoid",
+      "MULTIPLE_ACTIVATION": "softmax",
       "OPTIMIZER": "adam",
-      "LOSS": "sparse_categorical_crossentropy",
+      "BINARY_LOSS": "binary_crossentropy",
+      "MULTIPLE_LOSS": "sparse_categorical_crossentropy",
       "METRIC": "accuracy",
       // Hyperparameter tuning ranges
       "HYPERPARAMETER_RANGES": {
         "epochs": [
           10,
           50,
-          100
+          100,
+          200,
+          400
         ],
         "batch_size": [
           32,
           64,
-          128
-        ]
+          128,
+          256,
+          512
+        ],
+        "learning_rate": [0.001, 0.01, 0.1],
+        "num_layers": [1, 2, 3, 4, 5],
+        "units_per_layer": [16, 32, 64, 86, 98, 110, 128]
       }
     },
     "KNN": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
-      "N_NEIGHBORS": [3, 5, 7, 9, 11],
+      "N_NEIGHBORS": 20,
       "WEIGHTS": ["uniform", "distance"]
     },
     "SVM": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
-      "C": [0.1, 1, 10, 100, 1000],
+      "C": 10,
       "KERNEL": "rbf",
-      "GAMMA": [0.001, 0.01, 0.1, 1, 10],
-      "DEGREE": [2, 3, 4],  // Only applicable for polynomial kernel
-      "COEF0": [0, 1, 10],   // For polynomial and sigmoid kernels
+      "GAMMA": 1,
+      "DEGREE": 2,  // Only applicable for polynomial kernel
+      "COEF0": 1,   // For polynomial and sigmoid kernels
     },
     "BOOST": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
       "N_ESTIMATORS": [50, 100, 150],
-      "LEARNING_RATE": [0.01, 0.1, 1.0]
+      "LEARNING_RATE": [0.01, 0.1, 1.0],
+      "TREE_PARAMS": {
+          "estimator__max_depth": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+          "estimator__min_samples_split": [1, 2, 5, 10, 15, 20, 30, 45],
+          "estimator__min_samples_leaf": [1, 2, 5, 10, 15, 20, 30, 45]
+      }
     }
   }
 }

@@ -76,23 +76,40 @@ BOOST_LEARNING_RATE = wine_boost_config["LEARNING_RATE"]
 BOOST_TREE_PARAMS = wine_boost_config["TREE_PARAMS"]
 
 # ========== Step 1: Load the wine quality dataset ==========
-red_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
-white_wine_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
+columns = [
+    "age",
+    "workclass",
+    "fnlwgt",
+    "education",
+    "education_num",
+    "marital_status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "capital_gain",
+    "capital_loss",
+    "hours_per_week",
+    "native_country",
+    "income",
+]
+data = pd.read_csv(
+    url, header=None, names=columns, na_values=" ?", skipinitialspace=True
+)
 
-red_wine = pd.read_csv(red_wine_url, delimiter=";")
-white_wine = pd.read_csv(white_wine_url, delimiter=";")
+# Drop rows with missing values
+data = data.dropna()
 
-red_wine["type"] = 0
-white_wine["type"] = 1
-
-wine_data = pd.concat([red_wine, white_wine])
-print(wine_data.head())
+# Convert categorical columns to numerical
+data = pd.get_dummies(data, drop_first=True)
 
 # ========== Step 2: Process the wine dataset ==========
-# For quality multi-class classification
-X = wine_data.drop(["quality"], axis=1)
-y = wine_data["quality"]
+# Separate features and target
+X = data.drop("income_>50K", axis=1)
+y = data["income_>50K"]
 
+# Split the data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE
 )
