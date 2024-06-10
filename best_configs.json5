@@ -63,30 +63,18 @@
       "METRIC": "accuracy",
       // Hyperparameter tuning ranges
       "HYPERPARAMETER_RANGES": {
-        "epochs": [
-          10,
-          50,
-          100,
-          200,
-          400
-        ],
-        "batch_size": [
-          32,
-          64,
-          128,
-          256,
-          512
-        ],
-        "learning_rate": [0.001, 0.01, 0.1],
-        "num_layers": [1, 2, 3, 4, 5],
-        "units_per_layer": [16, 32, 64, 86, 98, 110, 128]
+        "epochs": 50,
+        "batch_size": 128,
+        "learning_rate": 0.001,
+        "num_layers": 3,
+        "units_per_layer": 64,
       }
     },
     "KNN": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
       "N_NEIGHBORS": 20,
-      "WEIGHTS": ["uniform", "distance"]
+      "WEIGHTS": "distance"
     },
     "SVM": {
       "TEST_SIZE": 0.2,
@@ -100,12 +88,12 @@
     "BOOST": {
       "TEST_SIZE": 0.2,
       "RANDOM_STATE": 42,
-      "N_ESTIMATORS": [50, 100, 150],
-      "LEARNING_RATE": [0.01, 0.1, 1.0],
+      "N_ESTIMATORS": 100,
+      "LEARNING_RATE": 0.1,
       "TREE_PARAMS": {
-          "estimator__max_depth": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-          "estimator__min_samples_split": [1, 2, 5, 10, 15, 20, 30, 45],
-          "estimator__min_samples_leaf": [1, 2, 5, 10, 15, 20, 30, 45]
+          "estimator__max_depth": 2,
+          "estimator__min_samples_split": 2,
+          "estimator__min_samples_leaf": 5,
       }
     }
   }
