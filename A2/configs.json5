@@ -1,0 +1,18 @@
+{
+  "rhc": {
+    "max_attempts": 100,
+    "max_iters": 1000,
+    "restarts": 0,
+    "num_runs": 10,
+  },
+  "sa": {
+    "max_attempts": 100,
+    "max_iters": 1000,
+  },
+  "ga": {
+    "pop_size": 200,
+    "mutation_prob": 0.1,
+    "max_attempts": 10,
+    "max_iters": 1000
+  }
+}
