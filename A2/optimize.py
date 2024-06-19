@@ -53,6 +53,18 @@ def run_ga(problem, pop_size=200, mutation_prob=0.1, max_attempts=10, max_iters=
     return best_state, best_fitness
 
 
+# Mutual-Information-Maximizing Input Clustering (MIMIC)
+def run_mimic(problem, pop_size=200, keep_pct=0.2, max_attempts=10, max_iters=1000):
+    best_state, best_fitness, _ = mlrose.mimic(
+        problem,
+        pop_size=pop_size,
+        keep_pct=keep_pct,
+        max_attempts=max_attempts,
+        max_iters=max_iters,
+    )
+    return best_state, best_fitness
+
+
 # ===== 3. Run the algorithm =====
 # a) four peaks
 rhc_four_peaks_states, rhc_four_peaks_fitnesses = run_rhc(
