@@ -1,157 +1,172 @@
 import mlrose_hiive as mlrose
 import numpy as np
 import matplotlib.pyplot as plt
+import json5
+
+# Customized Libraries
+from utils import CustomKnapsack
+
+# Load configuration
+with open("configs.json5") as f:
+    config = json5.load(f)
+
+MAX_ATTEMPTS = config["shared"]["max_attempts"]
+MAX_ITERS = config["shared"]["max_iters"]
 
 # ===== 1. Define optimization problems =====
-# Four Peaks Problem
+
+# Simple Version
+# Four Peaks Problem (Maximization, favors SA)
 four_peaks_fitness = mlrose.FourPeaks(t_pct=0.15)
-four_peaks_problem = mlrose.DiscreteOpt(
+four_peaks_simple_problem = mlrose.DiscreteOpt(
     length=20,
     fitness_fn=four_peaks_fitness,
     maximize=True,
     max_val=2
 )
 
-# Knapsack Problem
+
+# Custom Knapsack Problem (Minimization, favors GA)
 weights = [10, 5, 2, 8, 15, 7, 3, 20, 6, 1]
 values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-knapsack_fitness = mlrose.Knapsack(weights, values, max_weight_pct=0.6)
+knapsack_fitness = CustomKnapsack(weights, values, max_weight_pct=0.6, target_weight_pct=0.5)
+knapsack_simple_problem = mlrose.DiscreteOpt(
+    length=10,
+    fitness_fn=knapsack_fitness,
+    maximize=False,
+    max_val=2
+)
+
+# Complicated Version
+# Four Peaks Problem
+four_peaks_fitness = mlrose.FourPeaks(t_pct=0.15)
+four_peaks_problem = mlrose.DiscreteOpt(
+    length=40,  # Increased length for more complexity
+    fitness_fn=four_peaks_fitness,
+    maximize=True,
+    max_val=2
+)
+
+# Knapsack Problem
+weights = [10, 5, 2, 8, 15, 7, 3, 20, 6, 1, 25, 12, 18, 14, 9, 11, 23, 17, 19, 21]  # Increased weights and items for more complexity
+values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+knapsack_fitness = CustomKnapsack(weights, values, max_weight_pct=0.6, target_weight_pct=0.5)
 knapsack_problem = mlrose.DiscreteOpt(
-    length=10, fitness_fn=knapsack_fitness, maximize=True, max_val=2
+    length=20,  # Increased length for more complexity
+    fitness_fn=knapsack_fitness,
+    maximize=False,
+    max_val=2
 )
 
 # ===== 2. Implement Randomized Optimization algorithms =====
 
+
 # Randomized Hill Climbing (RHC)
-def run_rhc(problem, max_attempts=10, max_iters=1000, restarts=0, num_runs=10):
-    best_fitnesses = []
-    best_states = []
-    for run in range(num_runs):
-        best_state, best_fitness, _ = mlrose.random_hill_climb(
-            problem, max_attempts=max_attempts, max_iters=max_iters, restarts=restarts
-        )
-        best_fitnesses.append(best_fitness)
-        print(f"[RHC] states are {best_states}")
-    return (best_fitnesses, best_states)
+def run_rhc(problem, max_attempts, max_iters, restarts, num_runs):
+    best_state, best_fitness, fitness_curve = mlrose.random_hill_climb(
+        problem,
+        max_attempts=max_attempts,
+        max_iters=max_iters,
+        restarts=restarts,
+        curve=True,
+    )
+    return best_state, best_fitness, fitness_curve
+
 
 # Simulated Annealing (SA)
-def run_sa(problem, schedule=mlrose.ExpDecay(), max_attempts=10, max_iters=1000):
-    best_state, best_fitness, _ = mlrose.simulated_annealing(
-        problem, schedule=schedule, max_attempts=max_attempts, max_iters=max_iters
+def run_sa(problem, schedule, max_attempts, max_iters):
+    best_state, best_fitness, fitness_curve = mlrose.simulated_annealing(
+        problem,
+        schedule=eval(f"mlrose.{schedule}"),
+        max_attempts=max_attempts,
+        max_iters=max_iters,
+        curve=True,
     )
-    return best_state, best_fitness
+    return best_state, best_fitness, fitness_curve
+
 
 # Genetic Algorithm (GA)
-def run_ga(problem, pop_size=200, mutation_prob=0.1, max_attempts=10, max_iters=1000):
-    best_state, best_fitness, _ = mlrose.genetic_alg(
+def run_ga(problem, pop_size, mutation_prob, max_attempts, max_iters):
+    best_state, best_fitness, fitness_curve = mlrose.genetic_alg(
         problem,
         pop_size=pop_size,
         mutation_prob=mutation_prob,
         max_attempts=max_attempts,
         max_iters=max_iters,
+        curve=True,
     )
-    return best_state, best_fitness
+    return best_state, best_fitness, fitness_curve
 
 
 # Mutual-Information-Maximizing Input Clustering (MIMIC)
-def run_mimic(problem, pop_size=200, keep_pct=0.2, max_attempts=10, max_iters=1000):
-    best_state, best_fitness, _ = mlrose.mimic(
+def run_mimic(problem, pop_size, keep_pct, max_attempts, max_iters):
+    best_state, best_fitness, fitness_curve = mlrose.mimic(
         problem,
         pop_size=pop_size,
         keep_pct=keep_pct,
         max_attempts=max_attempts,
         max_iters=max_iters,
+        curve=True,
     )
-    return best_state, best_fitness
+    return best_state, best_fitness, fitness_curve
 
 
-# ===== 3. Run the algorithm =====
-# a) four peaks
-rhc_four_peaks_states, rhc_four_peaks_fitnesses = run_rhc(
-    four_peaks_problem,
-    max_attempts=100,
-    max_iters=1000,
-    restarts=0,
-    num_runs=num_runs
-)
-print("[RHC] Four Peaks Best states:", rhc_four_peaks_states)
-print("[RHC] Four Peaks Best fitnesses:", rhc_four_peaks_fitnesses)
+# ===== 3. Run the algorithms and collect performance data =====
+def plot_performance(problem, problem_name):
+    plt.figure()
 
-schedule = mlrose.ExpDecay()  # Exponential decay schedule
-best_state, best_fitness = run_sa(
-    four_peaks_problem,
-    schedule=schedule,
-    max_attempts=100,
-    max_iters=1000
-)
-print("[SA] Four Peaks Best state:", best_state)
-print("[SA] Four Peaks Best fitness:", best_fitness)
+    # Run Randomized Hill Climbing
+    rhc_state, rhc_fitness, rhc_curve = run_rhc(
+        problem=problem,
+        max_attempts=MAX_ATTEMPTS,
+        max_iters=MAX_ITERS,
+        restarts=config["rhc"]["restarts"],
+        num_runs=config["rhc"]["num_runs"],
+    )
+    plt.plot([value[0] for value in rhc_curve], label="RHC")
 
-best_state, best_fitness = run_ga(
-    four_peaks_problem,
-    pop_size=200,
-    mutation_prob=0.1,
-    max_attempts=100,
-    max_iters=1000,
-)
-print("[GA] Four Peaks Best state:", best_state)
-print("[GA] Four Peaks Best fitness:", best_fitness)
+    # Run Simulated Annealing
+    # scheule = mlrose.GeomDecay()
+    # if config["sa"]["schedule"] == "ExpDecay()":
+    #     schedule = mlrose.ExpDecay()
+    sa_state, sa_fitness, sa_curve = run_sa(
+        problem=problem,
+        max_attempts=MAX_ATTEMPTS,
+        max_iters=MAX_ITERS,
+        schedule=config["sa"]["schedule"],
+    )
+    plt.plot([value[0] for value in sa_curve], label="SA")
 
-# # b) knapsack
-# rhc_knapsack_results = run_rhc(
-#     knapsack_problem,
-#     max_attempts=100,
-#     max_iters=1000,
-#     restarts=0,
-#     num_runs=num_runs
-# )
-# print("Knapsack Results:", rhc_knapsack_results)
+    # Run Genetic Algorithm
+    ga_state, ga_fitness, ga_curve = run_ga(
+        problem=problem,
+        max_attempts=MAX_ATTEMPTS,
+        max_iters=MAX_ITERS,
+        pop_size=config["ga"]["pop_size"],
+        mutation_prob=config["ga"]["mutation_prob"],
+    )
+    plt.plot([value[0] for value in ga_curve], label="GA")
 
+    # Run MIMIC
+    mimic_state, mimic_fitness, mimic_curve = run_mimic(
+        problem=problem,
+        max_attempts=MAX_ATTEMPTS,
+        max_iters=MAX_ITERS,
+        pop_size=config["mimic"]["pop_size"],
+        keep_pct=config["mimic"]["keep_pct"],
+    )
+    plt.plot([value[0] for value in mimic_curve], label="MIMIC")
 
-# # ===== 4. Analysis =====
-
-# def plot_results(results, title):
-#     plt.figure(figsize=(10, 6))
-#     plt.hist(results, bins=10, alpha=0.7)
-#     plt.title(f"{title} Fitness Distribution")
-#     plt.xlabel("Fitness")
-#     plt.ylabel("Frequency")
-#     plt.grid(True)
-#     plt.show()
-
-
-# # Plot results for Four Peaks
-# plot_results(rhc_four_peaks_results, "Four Peaks")
-
-# # Plot results for Knapsack
-# plot_results(rhc_knapsack_results, "Knapsack")
+    # Plot the performance curves
+    plt.title(f"Performance Comparison for {problem_name}")
+    plt.xlabel("Iterations")
+    plt.ylabel("Fitness")
+    plt.legend()
+    plt.show()
 
 
-# import time
+plot_performance(four_peaks_simple_problem, "Four Peaks (simple)")
+plot_performance(knapsack_simple_problem, "Knapsack (simple)")
 
-
-# def evaluate_rhc(problem, max_attempts=10, max_iters=1000, restarts=0):
-#     start_time = time.time()
-#     best_state, best_fitness, _ = mlrose.random_hill_climb(
-#         problem, max_attempts=max_attempts, max_iters=max_iters, restarts=restarts
-#     )
-#     end_time = time.time()
-#     duration = end_time - start_time
-#     return best_state, best_fitness, duration
-
-
-# # Evaluate on Four Peaks
-# four_peaks_state, four_peaks_fitness, four_peaks_time = evaluate_rhc(
-#     four_peaks_problem, max_attempts=100, max_iters=1000, restarts=0
-# )
-# print("Four Peaks - Best State:", four_peaks_state)
-# print("Four Peaks - Best Fitness:", four_peaks_fitness)
-# print("Four Peaks - Duration (seconds):", four_peaks_time)
-
-# # Evaluate on Knapsack
-# knapsack_state, knapsack_fitness, knapsack_time = evaluate_rhc(
-#     knapsack_problem, max_attempts=100, max_iters=1000, restarts=0
-# )
-# print("Knapsack - Best State:", knapsack_state)
-# print("Knapsack - Best Fitness:", knapsack_fitness)
-# print("Knapsack - Duration (seconds):", knapsack_time)
+plot_performance(four_peaks_problem, "Four Peaks (complicate)")
+plot_performance(knapsack_problem, "Knapsack (complicate)")
