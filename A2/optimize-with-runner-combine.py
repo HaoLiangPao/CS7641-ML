@@ -70,7 +70,7 @@ def run_rhc(problem):
         output_directory="./optimization_results",
         seed=42,
         iteration_list=[10, 100, 500, 1000],
-        restart_list=[0, 5, 10, 15],
+        restart_list=[10], # This will give 10 rounds of data (10 series in the plot)
         max_attempts=MAX_ATTEMPTS,
     )
     return runner.run()
@@ -138,19 +138,19 @@ mimic_knapsack_simple_results = run_mimic(knapsack_simple_problem)
 
 
 # TODO: finish the comparision
-def plot_ga_results(results, problem_name):
-    file_path = "./optimization_results/sa/sa__sa__run_stats_df.csv"
-    sa_results = pd.read_csv(file_path)
+def plot_rhc_results(results, problem_name):
+    file_path = "./optimization_results/rhc/rhc__rhc__run_stats_df.csv"
+    rhc_results = pd.read_csv(file_path)
 
     # Filter data for plotting
-    temp_values = sa_results["schedule_init_temp"].unique()
+    temp_values = rhc_results["schedule_init_temp"].unique()
 
     # Plot Iteration vs Fitness
     plt.figure(figsize=(14, 6))
     for temp in temp_values:
-        temp_data = sa_results[sa_results["schedule_init_temp"] == temp][:5]
-        plt.plot(temp_data["Iteration"], temp_data["Fitness"], label=f"Temp {temp}")
-    plt.title(f"Iteration vs Fitness for SA ({problem_name})")
+        temp_data = rhc_results[rhc_results["schedule_init_temp"] == temp][:5]
+        plt.plot(temp_data["Iteration"], temp_data["Fitness"], label=f"Restart {temp}")
+    plt.title(f"Iteration vs Fitness for RHC ({problem_name})")
     plt.xlabel("Iteration")
     plt.ylabel("Fitness")
     plt.legend()
@@ -159,9 +159,9 @@ def plot_ga_results(results, problem_name):
     # Plot Iteration vs Time
     plt.figure(figsize=(14, 6))
     for temp in temp_values:
-        temp_data = sa_results[sa_results["schedule_init_temp"] == temp][:5]
+        temp_data = rhc_results[rhc_results["schedule_init_temp"] == temp][:5]
         plt.plot(temp_data["Iteration"], temp_data["Time"], label=f"Temp {temp}")
-    plt.title(f"Iteration vs Time for SA ({problem_name})")
+    plt.title(f"Iteration vs Time for RHC ({problem_name})")
     plt.xlabel("Iteration")
     plt.ylabel("Time (s)")
     plt.legend()
