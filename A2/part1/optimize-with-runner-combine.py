@@ -136,47 +136,9 @@ mimic_knapsack_simple_results = run_mimic(knapsack_simple_problem)
 # ===== 3. Plot the results =====
 
 
-
 # TODO: finish the comparision
 def plot_rhc_results(results, problem_name):
-    file_path = "./optimization_results/rhc/rhc__rhc__run_stats_df.csv"
-    rhc_results = pd.read_csv(file_path)
-
-    # Filter data for plotting
-    temp_values = rhc_results["schedule_init_temp"].unique()
-
-    # Plot Iteration vs Fitness
-    plt.figure(figsize=(14, 6))
-    for temp in temp_values:
-        temp_data = rhc_results[rhc_results["schedule_init_temp"] == temp][:5]
-        plt.plot(temp_data["Iteration"], temp_data["Fitness"], label=f"Restart {temp}")
-    plt.title(f"Iteration vs Fitness for RHC ({problem_name})")
-    plt.xlabel("Iteration")
-    plt.ylabel("Fitness")
-    plt.legend()
-    plt.show()
-
-    # Plot Iteration vs Time
-    plt.figure(figsize=(14, 6))
-    for temp in temp_values:
-        temp_data = rhc_results[rhc_results["schedule_init_temp"] == temp][:5]
-        plt.plot(temp_data["Iteration"], temp_data["Time"], label=f"Temp {temp}")
-    plt.title(f"Iteration vs Time for RHC ({problem_name})")
-    plt.xlabel("Iteration")
-    plt.ylabel("Time (s)")
-    plt.legend()
-    plt.show()
-
-    # Plot Iteration vs Function Evaluations (FEvals)
-    plt.figure(figsize=(14, 6))
-    for temp in temp_values:
-        temp_data = sa_results[sa_results["schedule_init_temp"] == temp][:5]
-        plt.plot(temp_data["Iteration"], temp_data["FEvals"], label=f"Temp {temp}")
-    plt.title(f"Iteration vs Function Evaluations for SA ({problem_name})")
-    plt.xlabel("Iteration")
-    plt.ylabel("Function Evaluations")
-    plt.legend()
-    plt.show()
+    pass
 
 def plot_sa_results(results, problem_name):
     file_path = "./optimization_results/sa/sa__sa__run_stats_df.csv"
@@ -218,10 +180,19 @@ def plot_sa_results(results, problem_name):
     plt.legend()
     plt.show()
 
+# TODO: finish the comparision
+def plot_ga_results(results, problem_name):
+    pass
+
+# TODO: finish the comparision
+def plot_mimic_results(results, problem_name):
+    pass
+
+
+plot_rhc_results(sa_four_peaks_simple_results, "Simple 4 Peak")
 plot_sa_results(sa_four_peaks_simple_results, "Simple 4 Peak")
-plot_sa_results(sa_four_peaks_simple_results, "Simple 4 Peak")
-plot_sa_results(sa_four_peaks_simple_results, "Simple 4 Peak")
-plot_sa_results(sa_four_peaks_simple_results, "Simple 4 Peak")
+plot_ga_results(sa_four_peaks_simple_results, "Simple 4 Peak")
+plot_mimic_results(sa_four_peaks_simple_results, "Simple 4 Peak")
 
 
 # def plot_results(results, problem_name, metric):
@@ -273,4 +244,3 @@ plot_sa_results(sa_four_peaks_simple_results, "Simple 4 Peak")
 
 
 # Get the best hyper parameter then compare the performance on the problem.
-
