@@ -47,31 +47,31 @@ def run_mimic(problem, p_name, iteration_list, population_sizes, keep_percent_li
 # )
 
 iteration_list = range(0, 100, 5)
-# # 1. fixed population
-population_sizes = [10]
-keep_percent_list = [0.1, 0.2, 0.3, 0.4]
+# # # 1. fixed population
+# population_sizes = [10]
+# keep_percent_list = [0.1, 0.2, 0.3, 0.4]
 
 # 2. fixed percentage
-# population_sizes = range(10, 200, 50)
-# keep_percent_list = [0.3]
+population_sizes = range(10, 200, 50)
+keep_percent_list = [0.3]
 
-# # Traveling Salesman Problem
-# mimic_tsp_simple_results = run_mimic(
-#     tsp_simple_problem,
-#     p_name="TSP-simple",
-#     iteration_list=iteration_list,
-#     population_sizes=population_sizes,
-#     keep_percent_list=keep_percent_list,
-# )
+# Traveling Salesman Problem
+mimic_tsp_simple_results = run_mimic(
+    tsp_simple_problem,
+    p_name="TSP-simple",
+    iteration_list=iteration_list,
+    population_sizes=population_sizes,
+    keep_percent_list=keep_percent_list,
+)
 
-# # Knapsack
-# mimic_knapsack_simple_results = run_mimic(
-#     knapsack_simple_problem,
-#     p_name="knapsack-simple",
-#     iteration_list=iteration_list,
-#     population_sizes=population_sizes,
-#     keep_percent_list=keep_percent_list,
-# )
+# Knapsack
+mimic_knapsack_simple_results = run_mimic(
+    knapsack_simple_problem,
+    p_name="knapsack-simple",
+    iteration_list=iteration_list,
+    population_sizes=population_sizes,
+    keep_percent_list=keep_percent_list,
+)
 
 # Traveling Salesman Problem
 mimic_tsp_complex_results = run_mimic(
@@ -170,54 +170,54 @@ def plot_mimic_results(results, problem_name, attribute_col, attribute):
 #     iteration_list=iteration_list,
 # )
 
-plot_op_results(
-    results=mimic_tsp_complex_results,
-    problem_name="TSP-complex",
-    attribute_col="Keep Percent",
-    attribute="keep_percentage",
-    algorithm="mimic",
-    iteration_list=iteration_list,
-)
-plot_op_results(
-    results=mimic_knapsack_complex_results,
-    problem_name="knapsack-complex",
-    attribute_col="Keep Percent",
-    attribute="keep_percentage",
-    algorithm="mimic",
-    iteration_list=iteration_list,
-)
-
-# # 2. fixed percentage
-# plot_op_results(
-#     results=mimic_tsp_simple_results,
-#     problem_name="TSP-simple",
-#     attribute_col="Population Size",
-#     attribute="population",
-#     algorithm="mimic",
-#     iteration_list=iteration_list,
-# )
-# plot_op_results(
-#     results=mimic_knapsack_simple_results,
-#     problem_name="knapsack-simple",
-#     attribute_col="Population Size",
-#     attribute="population",
-#     algorithm="mimic",
-#     iteration_list=iteration_list,
-# )
-
 # plot_op_results(
 #     results=mimic_tsp_complex_results,
 #     problem_name="TSP-complex",
-#     attribute_col="Population Size",
-#     attribute="population",
+#     attribute_col="Keep Percent",
+#     attribute="keep_percentage",
 #     algorithm="mimic",
 #     iteration_list=iteration_list,
 # )
 # plot_op_results(
 #     results=mimic_knapsack_complex_results,
 #     problem_name="knapsack-complex",
-#     attribute_col="Population Size",
-#     attribute="population",
+#     attribute_col="Keep Percent",
+#     attribute="keep_percentage",
 #     algorithm="mimic",
 #     iteration_list=iteration_list,
 # )
+
+# 2. fixed percentage
+plot_op_results(
+    results=mimic_tsp_simple_results,
+    problem_name="TSP-simple",
+    attribute_col="Population Size",
+    attribute="population",
+    algorithm="mimic",
+    iteration_list=iteration_list,
+)
+plot_op_results(
+    results=mimic_knapsack_simple_results,
+    problem_name="knapsack-simple",
+    attribute_col="Population Size",
+    attribute="population",
+    algorithm="mimic",
+    iteration_list=iteration_list,
+)
+
+plot_op_results(
+    results=mimic_tsp_complex_results,
+    problem_name="TSP-complex",
+    attribute_col="Population Size",
+    attribute="population",
+    algorithm="mimic",
+    iteration_list=iteration_list,
+)
+plot_op_results(
+    results=mimic_knapsack_complex_results,
+    problem_name="knapsack-complex",
+    attribute_col="Population Size",
+    attribute="population",
+    algorithm="mimic",
+    iteration_list=iteration_list,
+)
