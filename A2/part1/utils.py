@@ -1,5 +1,8 @@
 import mlrose_hiive as mlrose
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 
 class CustomKnapsack(mlrose.Knapsack):
     def __init__(self, weights, values, max_weight_pct=0.35, target_weight_pct=0.3):
@@ -37,3 +40,75 @@ class CustomKnapsack(mlrose.Knapsack):
         else:
             fitness = self._w
         return fitness
+
+
+def plot_op_results(
+    results, problem_name, attribute_col, attribute, algorithm, iteration_list
+):
+    file_path = f"./optimization_results/{algorithm}-{problem_name}/{algorithm}__{algorithm}-{problem_name}__run_stats_df.csv"
+    algorithm_results = pd.read_csv(file_path)
+
+    # Filter data for plotting
+    attribute_col_value = algorithm_results[attribute_col].unique()
+
+    # Plot Iteration vs Fitness
+
+    plt.figure(figsize=(14, 12))
+    plt.subplot(3, 1, 1)
+    # plt.figure(figsize=(14, 6))
+    for attribute_value in attribute_col_value:
+        attribute_value_data = algorithm_results[
+            algorithm_results[attribute_col] == attribute_value
+        ][: len(iteration_list)]
+        plt.plot(
+            attribute_value_data["Iteration"],
+            attribute_value_data["Fitness"],
+            label=f"{attribute} {attribute_value}",
+        )
+    plt.title(f"Iteration vs Fitness for {algorithm.upper()} ({problem_name})")
+    plt.xlabel("Iteration")
+    plt.ylabel("Fitness")
+    plt.legend()
+    # plt.show()
+
+    # Plot Iteration vs Time
+    # plt.figure(figsize=(14, 6))
+    plt.subplot(3, 1, 2)
+    for attribute_value in attribute_col_value:
+        attribute_value_data = algorithm_results[
+            algorithm_results[attribute_col] == attribute_value
+        ][: len(iteration_list)]
+        plt.plot(
+            attribute_value_data["Iteration"],
+            attribute_value_data["Time"],
+            label=f"{attribute} {attribute_value}",
+        )
+    plt.title(f"Iteration vs Time for {algorithm.upper()} ({problem_name})")
+    plt.xlabel("Iteration")
+    plt.ylabel("Time (s)")
+    plt.legend()
+    # plt.show()
+
+    # Plot Iteration vs Function Evaluations (FEvals)
+    # plt.figure(figsize=(14, 6))
+    plt.subplot(3, 1, 3)
+    for attribute_value in attribute_col_value:
+        attribute_value_data = algorithm_results[
+            algorithm_results[attribute_col] == attribute_value
+        ][: len(iteration_list)]
+        plt.plot(
+            attribute_value_data["Iteration"],
+            attribute_value_data["FEvals"],
+            label=f"{attribute} {attribute_value}",
+        )
+    plt.title(
+        f"Iteration vs Function Evaluations for {algorithm.upper()} ({problem_name})"
+    )
+    plt.xlabel("Iteration")
+    plt.ylabel("Function Evaluations")
+    plt.legend()
+    # plt.show()
+
+    plt.tight_layout()
+    plt.show()
+

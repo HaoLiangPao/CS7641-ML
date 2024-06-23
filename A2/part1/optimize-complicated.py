@@ -16,29 +16,6 @@ MAX_ITERS = config["shared"]["max_iters"]
 
 # ===== 1. Define optimization problems =====
 
-# == Simple Version ==
-# Four Peaks Problem (Maximization, favors SA)
-four_peaks_fitness = mlrose.FourPeaks(t_pct=0.15)
-four_peaks_simple_problem = mlrose.DiscreteOpt(
-    length=20,
-    fitness_fn=four_peaks_fitness, 
-    maximize=True,
-    max_val=2
-)
-
-
-# Custom Knapsack Problem (Minimization, favors GA)
-weights = [10, 5, 2, 8, 15, 7, 3, 20, 6, 1]
-values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-knapsack_fitness = CustomKnapsack(weights, values, max_weight_pct=0.6, target_weight_pct=0.5)
-knapsack_simple_problem = mlrose.DiscreteOpt(
-    length=10,
-    fitness_fn=knapsack_fitness,
-    maximize=False,
-    max_val=2
-)
-
-# == Complicated Version ==
 # Four Peaks Problem
 four_peaks_fitness = mlrose.FourPeaks(t_pct=0.15)
 four_peaks_problem = mlrose.DiscreteOpt(
