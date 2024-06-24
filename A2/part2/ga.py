@@ -166,7 +166,7 @@ pipe = Pipeline(
     ]
 )
 
-pipe.fit(X_train, y_train)
+pipe.fit(X, y)
 y_proba = pipe.predict_proba(X)
 
 from sklearn.model_selection import GridSearchCV

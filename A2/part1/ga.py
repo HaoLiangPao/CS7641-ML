@@ -125,56 +125,20 @@ def plot_ga_results(results, problem_name):
     plt.legend()
     plt.show()
 
-# # 1. fixed population
-# plot_op_results(
-#     results=ga_tsp_simple_results,
-#     problem_name="TSP-simple",
-#     attribute_col="Mutation Rate",
-#     attribute="mutation_rate",
-#     algorithm="ga",
-#     iteration_list=iteration_list,
-# )
-# plot_op_results(
-#     results=ga_knapsack_simple_results,
-#     problem_name="knapsack-simple",
-#     attribute_col="Mutation Rate",
-#     attribute="mutation_rate",
-#     algorithm="ga",
-#     iteration_list=iteration_list,
-# )
-
-# plot_op_results(
-#     results=ga_tsp_complex_results,
-#     problem_name="TSP-complex",
-#     attribute_col="Mutation Rate",
-#     attribute="mutation_rate",
-#     algorithm="ga",
-#     iteration_list=iteration_list,
-# )
-# plot_op_results(
-#     results=ga_knapsack_complex_results,
-#     problem_name="knapsack-complex",
-#     attribute_col="Mutation Rate",
-#     attribute="mutation_rate",
-#     algorithm="ga",
-#     iteration_list=iteration_list,
-# )
-
-# 2. fixed mutation_rates
+# 1. fixed population
 plot_op_results(
     results=ga_tsp_simple_results,
     problem_name="TSP-simple",
-    attribute_col="Population Size",
-    attribute="population",
+    attribute_col="Mutation Rate",
+    attribute="mutation_rate",
     algorithm="ga",
-    iteration_list=iteration_list
+    iteration_list=iteration_list,
 )
-
 plot_op_results(
     results=ga_knapsack_simple_results,
     problem_name="knapsack-simple",
-    attribute_col="Population Size",
-    attribute="population",
+    attribute_col="Mutation Rate",
+    attribute="mutation_rate",
     algorithm="ga",
     iteration_list=iteration_list,
 )
@@ -182,16 +146,52 @@ plot_op_results(
 plot_op_results(
     results=ga_tsp_complex_results,
     problem_name="TSP-complex",
-    attribute_col="Population Size",
-    attribute="population",
+    attribute_col="Mutation Rate",
+    attribute="mutation_rate",
     algorithm="ga",
     iteration_list=iteration_list,
 )
 plot_op_results(
     results=ga_knapsack_complex_results,
     problem_name="knapsack-complex",
-    attribute_col="Population Size",
-    attribute="population",
+    attribute_col="Mutation Rate",
+    attribute="mutation_rate",
     algorithm="ga",
     iteration_list=iteration_list,
 )
+
+# 2. fixed mutation_rates
+# plot_op_results(
+#     results=ga_tsp_simple_results,
+#     problem_name="TSP-simple",
+#     attribute_col="Population Size",
+#     attribute="population",
+#     algorithm="ga",
+#     iteration_list=iteration_list
+# )
+
+# plot_op_results(
+#     results=ga_knapsack_simple_results,
+#     problem_name="knapsack-simple",
+#     attribute_col="Population Size",
+#     attribute="population",
+#     algorithm="ga",
+#     iteration_list=iteration_list,
+# )
+
+# plot_op_results(
+#     results=ga_tsp_complex_results,
+#     problem_name="TSP-complex",
+#     attribute_col="Population Size",
+#     attribute="population",
+#     algorithm="ga",
+#     iteration_list=iteration_list,
+# )
+# plot_op_results(
+#     results=ga_knapsack_complex_results,
+#     problem_name="knapsack-complex",
+#     attribute_col="Population Size",
+#     attribute="population",
+#     algorithm="ga",
+#     iteration_list=iteration_list,
+# )
