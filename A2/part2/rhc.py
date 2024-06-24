@@ -99,7 +99,7 @@ plt.plot(net.history[:, "train_loss"], label="Train Loss", color="navy")
 plt.plot(net.history[:, "valid_loss"], label="Validation Loss", color="lightcoral")
 plt.xlabel("Iteration")
 plt.ylabel("Loss")
-plt.title("Iterative Learning Curve (Loss)")
+plt.title("Iterative Learning Curve - RHC (Loss)")
 plt.grid(visible=True)
 plt.legend(frameon=False)
 plt.show()
@@ -110,7 +110,7 @@ plt.plot(net.history[:, "train_acc"], label="Train Acc", color="cornflowerblue")
 plt.plot(net.history[:, "valid_acc"], label="Validation Acc", color="chartreuse")
 plt.xlabel("Iteration")
 plt.ylabel("Accuracy")
-plt.title("Iterative Learning Curve (Accuracy)")
+plt.title("Iterative Learning Curve - RHC (Accuracy)")
 plt.grid(visible=True)
 plt.legend(frameon=False)
 plt.show()
@@ -148,7 +148,7 @@ plt.fill_between(
 )
 plt.plot(train_sizes, train_scores_mean, label="Training score", color="cyan")
 plt.plot(train_sizes, test_scores_mean, label="Test score", color="darkorchid")
-plt.title("Learning Curve")
+plt.title("Learning Curve - RHC")
 plt.xlabel("Training size")
 plt.ylabel("Score")
 plt.grid(visible=True)
@@ -189,5 +189,17 @@ params = {
 
 # Fit GridSearchCV on the training data
 gs = GridSearchCV(net, params, refit=False, cv=3, scoring="accuracy", verbose=2)
+
 gs.fit(X_train, y_train)
-print("best score: {:.3f}, best params: {}".format(gs.best_score_, gs.best_params_))
+print(
+    "[Fitting trainning sets] best score: {:.3f}, best params: {}".format(
+        gs.best_score_, gs.best_params_
+    )
+)
+
+gs.fit(X_test, y_test)
+print(
+    "[Fitting testing sets] best score: {:.3f}, best params: {}".format(
+        gs.best_score_, gs.best_params_
+    )
+)

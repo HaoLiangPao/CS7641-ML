@@ -53,6 +53,12 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.7, random_state=42
 )
 
+# X_train = X_train.astype(np.float32)
+# y_train = y_train.astype(np.int64)
+
+# X_test = X_test.astype(np.float32)
+# y_test = y_test.astype(np.int64)
+
 # Standardize the data
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
@@ -61,72 +67,66 @@ X_test = scaler.transform(X_test)
 input_dim = X_train.shape[1]
 output_dim = len(np.unique(y))
 
-
 from skorch.callbacks import EpochScoring
 
-# Define the neural network with backpropagation
 net = NeuralNetClassifier(
     module=GAModule,
-    module__input_dim=input_dim,  # Number of features
-    module__output_dim=output_dim,  # Number of classes
-    module__hidden_units=32,  # Number of hidden units
-    module__hidden_layers=2,  # Number of hidden layers
+    module__input_dim=input_dim,
+    module__output_dim=output_dim,
+    module__hidden_units=32,
+    module__hidden_layers=2,
     module__population_size=300,
     module__to_mate=150,
     module__to_mutate=30,
-    # module__dropout_percent=0,
-    # module__step_size=0.1,
-    # module__activation=nn.ReLU(),
-    # module__output_activation=nn.Softmax(dim=-1),
-    max_epochs=500,
+    module__dropout_percent=0,
+    module__step_size=0.1,
+    module__activation=nn.ReLU(),
+    module__output_activation=nn.Softmax(dim=-1),
+    max_epochs=100,
     verbose=0,
-    callbacks=[EpochScoring(scoring="accuracy", name="train_acc", on_train=True)],
-    criterion=nn.CrossEntropyLoss,
-    optimizer=optim.SGD,
-    lr=0.05,
+    callbacks=[
+        EpochScoring(scoring="accuracy", name="train_acc", on_train=True),
+    ],
+    # use nn.CrossEntropyLoss instead of default nn.NLLLoss
+    # for use with raw prediction values instead of log probabilities
+    criterion=nn.CrossEntropyLoss(),
+    # Shuffle training data on each epoch
     iterator_train__shuffle=True,
 )
+
 GAModule.register_ga_training_step()
 
-# Train the network
+# fit data
 net.fit(X_train, y_train)
 
-# Predict class probabilities
-y_proba = net.predict_proba(X_train)
-
-# Plot iterative learning curve (loss)
 plt.figure()
+# plot the iterative learning curve (loss)
 plt.plot(net.history[:, "train_loss"], label="Train Loss", color="navy")
 plt.plot(net.history[:, "valid_loss"], label="Validation Loss", color="lightcoral")
 plt.xlabel("Iteration")
 plt.ylabel("Loss")
-plt.title("Iterative Learning Curve (Loss)")
+plt.title("Iterative Learning Curve - GA (Loss)")
 plt.grid(visible=True)
 plt.legend(frameon=False)
 plt.show()
 
-# Plot iterative learning curve (accuracy)
 plt.figure()
+# plot the iterative learning curve (accuracy)
 plt.plot(net.history[:, "train_acc"], label="Train Acc", color="cornflowerblue")
 plt.plot(net.history[:, "valid_acc"], label="Validation Acc", color="chartreuse")
 plt.xlabel("Iteration")
 plt.ylabel("Accuracy")
-plt.title("Iterative Learning Curve (Accuracy)")
+plt.title("Iterative Learning Curve - GA (Accuracy)")
 plt.grid(visible=True)
 plt.legend(frameon=False)
 plt.show()
 
 from sklearn.model_selection import learning_curve
 
-# Plot the learning curve
 plt.figure()
-
+# Plot the learning curve
 train_sizes, train_scores, test_scores = learning_curve(
-    net,
-    X_train,
-    y_train,
-    train_sizes=np.linspace(0.1, 1.0, 5),
-    cv=3,
+    net, X_train, y_train, train_sizes=np.linspace(0.1, 1.0, 5), cv=3
 )
 
 train_scores_mean = train_scores.mean(axis=1)
@@ -149,7 +149,7 @@ plt.fill_between(
 )
 plt.plot(train_sizes, train_scores_mean, label="Training score", color="cyan")
 plt.plot(train_sizes, test_scores_mean, label="Test score", color="darkorchid")
-plt.title("Learning Curve")
+plt.title("Learning Curve - GA")
 plt.xlabel("Training size")
 plt.ylabel("Score")
 plt.grid(visible=True)
@@ -166,29 +166,46 @@ pipe = Pipeline(
     ]
 )
 
-pipe.fit(X, y)
+pipe.fit(X_train, y_train)
 y_proba = pipe.predict_proba(X)
-
 
 from sklearn.model_selection import GridSearchCV
 
-# Deactivate skorch-internal train-valid split and verbose logging
-net.set_params(train_split=False, verbose=0)
+# deactivate skorch-internal train-valid split and verbose logging
+net.set_params(
+    train_split=False,
+    verbose=0,
+)
 
+# module specific parameters need to begin with 'module__'
 default_params = {
-    "module__input_dim": [X.shape[1]],
-    "module__output_dim": [len(np.unique(y))],
+    "module__input_dim": [12],
+    "module__output_dim": [2],
+    "module__step_size": [0.1],
 }
 
-# Module-specific parameters need to begin with 'module__'
-params = {
-    "lr": [0.01, 0.02],
+grid_search_params = {
     "max_epochs": [10, 20],
     "module__hidden_units": [10, 20],
+    "module__hidden_layers": [1, 2],
+    "module__activation": [nn.ReLU(), nn.Tanh()],
     **default_params,
 }
 
-# Fit GridSearchCV on the training data
-gs = GridSearchCV(net, params, refit=False, cv=3, scoring="accuracy", verbose=2)
+gs = GridSearchCV(
+    net, grid_search_params, refit=False, cv=3, scoring="accuracy", verbose=2
+)
+
 gs.fit(X_train, y_train)
-print("best score: {:.3f}, best params: {}".format(gs.best_score_, gs.best_params_))
+print(
+    "[Fitting trainning sets] best score: {:.3f}, best params: {}".format(
+        gs.best_score_, gs.best_params_
+    )
+)
+
+gs.fit(X_test, y_test)
+print(
+    "[Fitting testing sets] best score: {:.3f}, best params: {}".format(
+        gs.best_score_, gs.best_params_
+    )
+)
